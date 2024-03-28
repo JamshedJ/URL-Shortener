@@ -5,8 +5,11 @@ import (
 	"os"
 
 	"github.com/JamshedJ/URL-Shortener/internal/config"
+	mwLogger "github.com/JamshedJ/URL-Shortener/internal/http-server/middleware/logger"
 	"github.com/JamshedJ/URL-Shortener/internal/lib/logger/sl"
 	"github.com/JamshedJ/URL-Shortener/internal/storage/sqlite"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
@@ -31,8 +34,11 @@ func main() {
 	}
 
 	_ = storage
-
 	// TODO: init router
+	router := chi.NewRouter()
+ 
+	router.Use(middleware.RequestID) // middleware из chi, каждому приходящему запросу присваивает RequestID, полезен для отслеживание трейсов
+	router.Use(mwLogger.New(log)) 	 // middleware для логгирование запросов
 	// TODO: run server
 }
 
