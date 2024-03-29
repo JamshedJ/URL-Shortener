@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/JamshedJ/URL-Shortener/internal/config"
+	"github.com/JamshedJ/URL-Shortener/internal/http-server/handlers/fetch"
+	"github.com/JamshedJ/URL-Shortener/internal/http-server/handlers/save"
 	mwLogger "github.com/JamshedJ/URL-Shortener/internal/http-server/middleware/logger"
 	"github.com/JamshedJ/URL-Shortener/internal/lib/logger/sl"
 	"github.com/JamshedJ/URL-Shortener/internal/storage/sqlite"
@@ -33,12 +35,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	_ = storage
 	// TODO: init router
 	router := chi.NewRouter()
  
 	router.Use(middleware.RequestID) // middleware из chi, каждому приходящему запросу присваивает RequestID, полезен для отслеживание трейсов
 	router.Use(mwLogger.New(log)) 	 // middleware для логгирование запросов
+	router.Use(middleware.Recoverer) // ловит панику
+
+	router.Post("/url", save.New(log, storage))
+	router.Get("/{alias}", fetch.New(log, storage))
 	// TODO: run server
 }
 
